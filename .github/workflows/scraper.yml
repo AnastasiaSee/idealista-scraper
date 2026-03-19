@@ -1,0 +1,37 @@
+name: Run scraper weekly
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"  # каждый понедельник в 09:00 UTC
+  workflow_dispatch:  # кнопка "Run manually"
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install pandas requests python-dotenv
+
+      - name: Run scraper
+        env:
+          IDEALISTA_CLIENT_ID: ${{ secrets.IDEALISTA_CLIENT_ID }}
+          IDEALISTA_CLIENT_SECRET: ${{ secrets.IDEALISTA_CLIENT_SECRET }}
+        run: python your_script.py
+
+      - name: Commit data
+        run: |
+          git config --global user.name "bot"
+          git config --global user.email "bot@example.com"
+          git add .
+          git commit -m "Weekly data update" || echo "No changes"
+          git push
