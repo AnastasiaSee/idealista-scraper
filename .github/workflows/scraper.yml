@@ -26,7 +26,7 @@ jobs:
         env:
           IDEALISTA_CLIENT_ID: ${{ secrets.IDEALISTA_CLIENT_ID }}
           IDEALISTA_CLIENT_SECRET: ${{ secrets.IDEALISTA_CLIENT_SECRET }}
-        run: python  src/main.py
+        run: python -m src.main
 
       - name: Commit data
         run: |
