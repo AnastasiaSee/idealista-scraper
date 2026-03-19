@@ -7,6 +7,7 @@ import subprocess
 import base64
 from dotenv import load_dotenv
 import config
+from datetime import datetime
 
 load_dotenv()
 
@@ -110,21 +111,6 @@ def fetch_properties():
 # -----------------------------
 # SAVE
 # -----------------------------
-def save(properties):
-
-    if not properties:
-        print("⚠️ No properties collected")
-        return
-
-    df = pd.json_normalize(properties)
-
-    os.makedirs("data", exist_ok=True)
-
-    file = "data/idealista_data.csv"
-
-    df.to_csv(file, index=False)
-
-    print(f"💾 Saved {len(df)} properties")
 
 def save(properties):
 
@@ -135,8 +121,9 @@ def save(properties):
     new_data = pd.json_normalize(properties)
 
     os.makedirs("data", exist_ok=True)
-    file = "projects/idealista-scraper/data/idealista_data.csv"
-
+    date = datetime.now().strftime("%Y-%m-%d")
+    file = f"projects/idealista-scraper/data/idealista_{date}.csv"
+    
     if os.path.exists(file):
         old_data = pd.read_csv(file)
         df = pd.concat([old_data, new_data], ignore_index=True)
