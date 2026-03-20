@@ -16,33 +16,31 @@ CLIENT_SECRET = os.getenv("IDEALISTA_CLIENT_SECRET")
 
 
 # -----------------------------
-# TOKEN (via curl)
+# TOKEN 
 # -----------------------------
 def get_access_token():
-
     credentials = f"{CLIENT_ID}:{CLIENT_SECRET}"
     encoded = base64.b64encode(credentials.encode()).decode()
 
-    result = subprocess.run(
-        [
-            "curl",
-            "-X", "POST",
-            "https://api.idealista.com/oauth/token",
-            "-H", f"Authorization: Basic {encoded}",
-            "-d", "grant_type=client_credentials"
-        ],
-        capture_output=True,
-        text=True
+    response = requests.post(
+        "https://api.idealista.com/oauth/token",
+        headers={
+            "Authorization": f"Basic {encoded}",
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        data={"grant_type": "client_credentials"}
     )
 
-    data = json.loads(result.stdout)
+    print("STATUS:", response.status_code)
+    print("TEXT:", response.text)
 
-    token = data["access_token"]
+    data = response.json()
+
+    if "access_token" not in data:
+        raise Exception(f"❌ Token error: {data}")
 
     print("✅ Token received")
-
-    return token
-
+    return data["access_token"]
 
 # -----------------------------
 # FETCH DATA
