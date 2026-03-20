@@ -22,18 +22,14 @@ CLIENT_SECRET = os.getenv("IDEALISTA_CLIENT_SECRET")
 def get_access_token():
     url = "https://api.idealista.com/oauth/token"
 
-    credentials = f"{CLIENT_ID}:{CLIENT_SECRET}"
-    encoded_credentials = base64.b64encode(credentials.encode()).decode()
-
-    headers = {
-        "Authorization": f"Basic {encoded_credentials}",
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-        "Accept": "application/json"
-    }
-
-    payload = "grant_type=client_credentials"
-
-    response = requests.post(url, headers=headers, data=payload)
+    response = requests.post(
+        url,
+        auth=HTTPBasicAuth(CLIENT_ID, CLIENT_SECRET),
+        headers={
+            "Accept": "application/json"
+        },
+        data="grant_type=client_credentials"   # 🔥 строка, НЕ dict
+    )
 
     print("STATUS:", response.status_code)
     print("TEXT:", response.text)
@@ -41,13 +37,7 @@ def get_access_token():
     if response.status_code != 200:
         raise Exception(f"❌ Token request failed: {response.text}")
 
-    data = response.json()
-
-    if "access_token" not in data:
-        raise Exception(f"❌ Token error: {data}")
-
-    print("✅ Token received")
-    return data["access_token"]
+    return response.json()["access_token"]
 
 # -----------------------------
 # FETCH DATA
