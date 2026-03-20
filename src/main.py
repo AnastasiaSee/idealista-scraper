@@ -19,18 +19,20 @@ CLIENT_SECRET = os.getenv("IDEALISTA_CLIENT_SECRET")
 # TOKEN 
 # -----------------------------
 def get_access_token():
-    credentials = f"{CLIENT_ID}:{CLIENT_SECRET}"
-    encoded = base64.b64encode(credentials.encode()).decode()
+    url = "https://api.idealista.com/oauth/token"
 
-    response = requests.post(
-        "https://api.idealista.com/oauth/token",
-        headers={
-            "Authorization": f"Basic {encoded}",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Accept": "application/json"   
-        },
-        data={"grant_type": "client_credentials"}
-    )
+    credentials = f"{CLIENT_ID}:{CLIENT_SECRET}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+
+    headers = {
+        "Authorization": f"Basic {encoded_credentials}",
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "Accept": "application/json"
+    }
+
+    payload = "grant_type=client_credentials"
+
+    response = requests.post(url, headers=headers, data=payload)
 
     print("STATUS:", response.status_code)
     print("TEXT:", response.text)
