@@ -1,3 +1,4 @@
+from requests.auth import HTTPBasicAuth
 import requests
 import pandas as pd
 import os
@@ -110,7 +111,6 @@ def fetch_properties():
         time.sleep(1)
 
     return all_properties
-
 
 # -----------------------------
 # SAVE
