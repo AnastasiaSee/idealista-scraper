@@ -1,12 +1,12 @@
-name: Run scraper weekly
+name: Run pipeline (no API)
 
 on:
   schedule:
-    - cron: "0 9 * * 1"  #  each monday at 09:00 UTC
-  workflow_dispatch:  # "Run manually"
+    - cron: "0 9 * * 1"  # each Monday at 09:00 UTC
+  workflow_dispatch:
 
 jobs:
-  run-scraper:
+  run-pipeline:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,16 +22,15 @@ jobs:
         run: |
           pip install pandas requests python-dotenv
 
-      - name: Run scraper
-        env:
-          IDEALISTA_CLIENT_ID: ${{ secrets.IDEALISTA_CLIENT_ID }}
-          IDEALISTA_CLIENT_SECRET: ${{ secrets.IDEALISTA_CLIENT_SECRET }}
-        run: python -m src.main
+      - name: Run pipeline (skip API)
+        run: python -m src.main --no-api
 
-      - name: Commit data
+      - name: Commit data changes
         run: |
-          git config --global user.name "bot"
-          git config --global user.email "bot@example.com"
-          git add .
-          git commit -m "Weekly data update" || echo "No changes"
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          
+          git add data/
+          
+          git diff --cached --quiet || git commit -m "Update processed data"
           git push

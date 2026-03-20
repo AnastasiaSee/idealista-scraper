@@ -1,4 +1,3 @@
-from requests.auth import HTTPBasicAuth
 import requests
 import pandas as pd
 import os
@@ -7,7 +6,7 @@ import json
 import subprocess
 import base64
 from dotenv import load_dotenv
-from . import config
+import config
 from datetime import datetime
 
 load_dotenv()
@@ -17,33 +16,35 @@ CLIENT_SECRET = os.getenv("IDEALISTA_CLIENT_SECRET")
 
 
 # -----------------------------
-# TOKEN 
+# TOKEN (via curl)
 # -----------------------------
 def get_access_token():
-    url = "https://api.idealista.com/oauth/token"
+    credentials = f"{CLIENT_ID}:{CLIENT_SECRET}"
+    encoded = base64.b64encode(credentials.encode()).decode()
 
-    response = requests.post(
-        url,
-        auth=HTTPBasicAuth(CLIENT_ID, CLIENT_SECRET),
-        headers={
-            "Accept": "application/json"
-        },
-        data="grant_type=client_credentials"   # 🔥 строка, НЕ dict
+    result = subprocess.run(
+        [
+            "curl",
+            "-X", "POST",
+            "https://api.idealista.com/oauth/token",
+            "-H", f"Authorization: Basic {encoded}",
+            "-d", "grant_type=client_credentials"
+        ],
+        capture_output=True,
+        text=True
     )
 
-    print("STATUS:", response.status_code)
-    print("TEXT:", response.text)
+    data = json.loads(result.stdout)
+    token = data["access_token"]
 
-    if response.status_code != 200:
-        raise Exception(f"❌ Token request failed: {response.text}")
+    print("✅ Token received")
+    return token
 
-    return response.json()["access_token"]
 
 # -----------------------------
 # FETCH DATA
 # -----------------------------
 def fetch_properties():
-
     token = get_access_token()
 
     url = f"https://api.idealista.com/3.5/{config.COUNTRY}/search"
@@ -58,7 +59,6 @@ def fetch_properties():
     all_properties = []
 
     while True:
-
         payload = {
             "operation": config.OPERATION,
             "propertyType": config.PROPERTY_TYPE,
@@ -97,17 +97,15 @@ def fetch_properties():
             break
 
         page += 1
-
         time.sleep(1)
 
     return all_properties
 
+
 # -----------------------------
 # SAVE
 # -----------------------------
-
 def save(properties):
-
     if not properties:
         print("⚠️ No properties collected")
         return
@@ -116,12 +114,12 @@ def save(properties):
 
     os.makedirs("data", exist_ok=True)
     date = datetime.now().strftime("%Y-%m-%d")
-    file = f"projects/idealista-scraper/data/idealista_{date}.csv"
-    
+    file = f"idealista-scraper/data/idealista_{date}.csv"
+
     if os.path.exists(file):
         old_data = pd.read_csv(file)
         df = pd.concat([old_data, new_data], ignore_index=True)
-        df = df.drop_duplicates(subset="propertyCode")  # ключ Idealista
+        df = df.drop_duplicates(subset="propertyCode")
     else:
         df = new_data
 
@@ -129,13 +127,12 @@ def save(properties):
 
     print(f"💾 Total saved: {len(df)} properties")
 
+
 # -----------------------------
 # MAIN
 # -----------------------------
 def main():
-
     properties = fetch_properties()
-
     save(properties)
 
 
