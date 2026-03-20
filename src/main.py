@@ -26,13 +26,17 @@ def get_access_token():
         "https://api.idealista.com/oauth/token",
         headers={
             "Authorization": f"Basic {encoded}",
-            "Content-Type": "application/x-www-form-urlencoded"
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json"   
         },
         data={"grant_type": "client_credentials"}
     )
 
     print("STATUS:", response.status_code)
     print("TEXT:", response.text)
+
+    if response.status_code != 200:
+        raise Exception(f"❌ Token request failed: {response.text}")
 
     data = response.json()
 
