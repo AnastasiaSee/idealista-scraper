@@ -9,3 +9,7 @@ Data Pipeline:
 - Storage: GitHub (CSV snapshots)
 - Processing: GitHub Actions
 - Analysis: Google Colab
+
+- ## Open in Google Colab
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AnastasiaSee/idealista-scraper/blob/main/notebooks/idealista-scraper_analysis.ipynb)
